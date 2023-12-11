@@ -6,19 +6,11 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 
     if (err instanceof RequestValidationError) {
         console.log(' request validation error ')
-        const formattedError = err.errors.map(error => {
-            // It might be necessary to use a switch or if statements to check that you're dealing with the type that you want to format/debug.
-            if (error.type === 'field') {
-                return { message: error.msg, field: error.path }
-            }
-        })
-        return res.status(400).json({errors: formattedError})
+        return res.status(err.statusCode).json({ errors: err.serializeErrors() })
     }
     if (err instanceof DatabaseConnectionError) {
         console.log(' db connection error ')
-        return res.status(400).json({errors: [
-            { message: err.reason, }
-        ]})
+        return res.status(err.statusCode).json({ errors: err.serializeErrors() })
     }
 
     res.status(400).send({
